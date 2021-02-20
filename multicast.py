@@ -24,6 +24,6 @@ f.write(data)
 f.close()
 
 # Прочитали с файла
-read('test.msd')
+read('test.mseed')
 # Но получили ошибку формата
 
