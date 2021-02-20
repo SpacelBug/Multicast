@@ -6,7 +6,10 @@ fixedHeader[0]=str(int.from_bytes(data[0:6],'big'))[seqNumberDec:]
 for i in unpack('>2c5s2s3s2s2H4B2H2h4Bi2H', data[6:48]):
     fixedHeader.append(i)
 
-# Пока без нахождения иных блокитов
+# Пока без нахождения иных блокитов.
+# Каждый последующий блокит указан во 
+# втором поле текущего блокита.
+# Если там стоит '0', тогда блокитов больше нет
 blockette_1000=[]
 for i in unpack('>2H4B',data[48:56]):
     blockette_1000.append(i)
