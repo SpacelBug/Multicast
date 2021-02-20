@@ -1,5 +1,5 @@
 import socket
-from struct import unpack, pack
+import struct
 from obspy import Trace, read, Stream
     
 MCAST_GRP = '234.0.0.1'
