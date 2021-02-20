@@ -13,6 +13,7 @@ mreq = pack("4sl", socket.inet_aton(MCAST_GRP), socket.INADDR_ANY)
 
 sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
+# while True:
 # Получили с сокета данные
 data=sock.recv(512)
 print(data)
