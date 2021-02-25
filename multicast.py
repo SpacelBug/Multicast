@@ -30,7 +30,7 @@ mreq = struct.pack("4sl", socket.inet_aton(MCAST_GRP), socket.INADDR_ANY)
 sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
 while True:
-	# Получили с сокета данные
+    # Получили с сокета данные
     data=sock.recv(512)
     # Берем порядковый номер и форматируем его к виду ######
     # Пока не знаю верно ли он взят, но он нужен для того,
