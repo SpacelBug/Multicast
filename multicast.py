@@ -5,17 +5,31 @@ from threading import Thread
 import io
 from obspy import read
 
-def formMSEED(name, data):
-	# Проверяем существует ли файл
-	if os.path.exists('seeds/'+name+'.mseed'):
-		# Суммируем stream`ы (тот что постумил из мультикаста
-		# с тем что уже был записан в соответствующем файле)
-		oldData = read('seeds/'+name+'.mseed')
-		newData = oldData + data
-		newData.write('seeds/'+name+'.mseed')
-	else:
-		# Просто записываем stream в файл
-		data.write('seeds/'+name+'.mseed')
+def formMSEED(name):
+	while True:
+		# Получили с сокета данные
+		data=sock.recv(512)
+		print(os.getpid())
+		# Берем порядковый номер и форматируем его к виду ######
+		# Пока не знаю верно ли он взят, но он нужен для того,
+		# Чтобы привести наши данные к читаемому формату.
+		SqenNum = '{:0>6}'.format(str(int.from_bytes(data[4:6],'big')))
+		# Просто переменная для хранения имени будущего mseed
+		fileName = data[8:20].decode()
+		# Меняем первые шесть байт и перезаписываем дату в нормальный формат
+		data = (read(io.BytesIO(SqenNum.encode()+data[6:]), format='MSEED'))
+		# Если имен совпадают то переходим к записи
+		if (name==data[0].stats.station+' '+data[0].stats.location+data[0].stats.channel+data[0].stats.network):
+			# Проверяем существует ли файл
+			if os.path.exists('seeds/'+name+'.mseed'):
+				# Суммируем stream`ы (тот что постумил из мультикаста
+				# с тем что уже был записан в соответствующем файле)
+				oldData = read('seeds/'+name+'.mseed')
+				newData = oldData + data
+				newData.write('seeds/'+name+'.mseed')
+			else:
+				# Просто записываем stream в файл
+				data.write('seeds/'+name+'.mseed')
 
 # Всякое разное для мультикаста
 MCAST_GRP = '234.0.0.1'
@@ -29,20 +43,10 @@ mreq = struct.pack("4sl", socket.inet_aton(MCAST_GRP), socket.INADDR_ANY)
 
 sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
-while True:
-    # Получили с сокета данные
-    data=sock.recv(512)
-    # Берем порядковый номер и форматируем его к виду ######
-    # Пока не знаю верно ли он взят, но он нужен для того,
-    # Чтобы привести наши данные к читаемому формату.
-    SqenNum = '{:0>6}'.format(str(int.from_bytes(data[4:6],'big')))
-    # Просто переменная для хранения имени будущего mseed
-    # (Идентификационный код станции, идентификатор локации, 
-    # идентификатор канала и код сети)
-    fileName = data[8:20].decode()
-    # Меняем первые шесть байт и перезаписываем дату в нормальный формат
-    data = (read(io.BytesIO(SqenNum.encode()+data[6:]), format='MSEED'))
+# Список наблюдаемых станций
+station_list = ['BKI 02SHNYY','BZM 02SHEYY','GRL 02SHEYY']
 
-    # Отправляем данные на запись
-    Thread(target=formMSEED, args=(fileName, data)).start()
+# Выделяем каждой станции свой поток
+for name in station_list:
+	Thread(target=formMSEED, args=(name,)).start()
 
