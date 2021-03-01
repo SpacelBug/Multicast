@@ -15,7 +15,7 @@ def formMSEED(name):
 		SqenNum = '{:0>6}'.format(str(int.from_bytes(data[4:6],'big')))
 		# Меняем первые шесть байт и перезаписываем дату в нормальный формат
 		data = (read(io.BytesIO(SqenNum.encode()+data[6:]), format='MSEED'))
-		# Если имен совпадают то переходим к записи
+		# Если имена совпадают то переходим к записи
 		if (name==data[0].stats.station+' '+data[0].stats.location+data[0].stats.channel+data[0].stats.network):
 			# Проверяем существует ли файл
 			if os.path.exists('seeds/'+name+'.mseed'):
